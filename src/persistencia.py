@@ -75,7 +75,16 @@ def guardar_inventario(inventario):
             archivo.write(producto_a_linea(producto) + "\n")
 
 
+def registrar_venta(fecha, total, items):
+    partes = []
+    for codigo, cantidad in items.items():
+        partes.append(f"{codigo}:{cantidad}")
+    detalle = ";".join(partes)
+
+    with open(ruta_ventas, "a", encoding="utf-8") as archivo:
+        archivo.write(f"{fecha}|{total}|{detalle}\n")
+
+
 if __name__ == "__main__":
-    inventario = cargar_inventario()
-    guardar_inventario(inventario)
-    print("Inventario guardado")
+    registrar_venta("2026-11-20", 18400.0, {"LAC001": 2, "BEB001": 1})
+    print("Venta registrada")
