@@ -69,8 +69,13 @@ def cargar_inventario():
     return inventario
 
 
+def guardar_inventario(inventario):
+    with open(ruta_inventario, "w", encoding="utf-8") as archivo:
+        for producto in inventario.values():
+            archivo.write(producto_a_linea(producto) + "\n")
+
+
 if __name__ == "__main__":
     inventario = cargar_inventario()
-    print("Productos cargados:", len(inventario))
-    for producto in inventario.values():
-        print(producto)
+    guardar_inventario(inventario)
+    print("Inventario guardado")
