@@ -41,9 +41,36 @@ def producto_a_linea(producto):
     ])
 
 
+def cargar_inventario():
+    inventario = {}
+
+    try:
+        with open(ruta_inventario, "r", encoding="utf-8") as archivo:
+            for numero, linea in enumerate(archivo, start=1):
+                linea = linea.strip()
+                if linea == "":
+                    continue
+
+                try:
+                    producto = linea_a_producto(linea)
+                except ValueError as error:
+                    print(f"Advertencia: línea {numero} omitida ({error}).")
+                    continue
+
+                if producto["codigo"] in inventario:
+                    print(
+                        f"Advertencia: línea {numero} omitida (código repetido).")
+                    continue
+
+                inventario[producto["codigo"]] = producto
+    except FileNotFoundError:
+        print("No se encontró el archivo de inventario. Se inicia con uno vacío.")
+
+    return inventario
+
+
 if __name__ == "__main__":
-    linea = "LAC001|Leche entera 1L|Lacteos|4200.0|35|10|Alqueria"
-    producto = linea_a_producto(linea)
-    print(producto)
-    print(producto_a_linea(producto))
-    print(producto_a_linea(producto) == linea)
+    inventario = cargar_inventario()
+    print("Productos cargados:", len(inventario))
+    for producto in inventario.values():
+        print(producto)
