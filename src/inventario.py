@@ -32,6 +32,12 @@ def modificar_stock(inventario, codigo, nuevo_stock):
     inventario[codigo]["stock"] = nuevo_stock
 
 
+def eliminar_producto(inventario, codigo):
+    if codigo not in inventario:
+        raise ValueError(f"el código {codigo} no existe")
+    del inventario[codigo]
+
+
 if __name__ == "__main__":
     inventario = {
         "TST001": {
@@ -45,16 +51,10 @@ if __name__ == "__main__":
         }
     }
 
-    modificar_precio(inventario, "TST001", 1500.0)
-    modificar_stock(inventario, "TST001", 20)
-    print(inventario["TST001"]["precio"], inventario["TST001"]["stock"])
+    eliminar_producto(inventario, "TST001")
+    print("Productos:", len(inventario))
 
     try:
-        modificar_precio(inventario, "TST001", -5)
-    except ValueError as error:
-        print("Error:", error)
-
-    try:
-        modificar_stock(inventario, "XXX999", 10)
+        eliminar_producto(inventario, "TST001")
     except ValueError as error:
         print("Error:", error)
