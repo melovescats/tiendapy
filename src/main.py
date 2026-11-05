@@ -1,9 +1,9 @@
 from persistencia import cargar_inventario, guardar_inventario
 from tabulate import tabulate
-from validaciones import (ingresar_codigo, ingresar_texto,
-                          ingresar_decimal, ingresar_entero, ingresar_categoria)
-from inventario import (agregar_producto, buscar_por_codigo,
-                        buscar_por_categoria, modificar_precio, modificar_stock)
+from validaciones import (ingresar_codigo, ingresar_texto, ingresar_decimal,
+                          ingresar_entero, ingresar_categoria, confirmar)
+from inventario import (agregar_producto, buscar_por_codigo, buscar_por_categoria,
+                        modificar_precio, modificar_stock, eliminar_producto)
 
 
 def mostrar_menu():
@@ -127,6 +127,28 @@ def menu_modificar_producto(inventario):
         print("Error:", error)
 
 
+def menu_eliminar_producto(inventario):
+    print()
+    print("--- Eliminar producto ---")
+
+    codigo = ingresar_codigo("Código: ")
+    producto = buscar_por_codigo(inventario, codigo)
+    if producto is None:
+        print(f"No existe ningún producto con el código {codigo}.")
+        return
+
+    mostrar_tabla([producto])
+    if not confirmar("¿Seguro que quieres eliminar este producto?"):
+        print("Eliminación cancelada.")
+        return
+
+    try:
+        eliminar_producto(inventario, codigo)
+        print("Producto eliminado.")
+    except ValueError as error:
+        print("Error:", error)
+
+
 def main():
     inventario = cargar_inventario()
 
@@ -146,10 +168,12 @@ def main():
             menu_consultar_producto(inventario)
         elif opcion == "4":
             menu_modificar_producto(inventario)
+        elif opcion == "5":
+            menu_eliminar_producto(inventario)
         elif opcion == "9":
             guardar_inventario(inventario)
             print("Inventario guardado.")
-        elif opcion in ["5", "6", "7", "8"]:
+        elif opcion in ["6", "7", "8"]:
             print("Esta opción todavía no está lista.")
         else:
             print("Error: opción no válida.")
