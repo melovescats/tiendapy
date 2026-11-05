@@ -4,20 +4,26 @@ def agregar_producto(inventario, producto):
     inventario[producto["codigo"]] = producto
 
 
+def buscar_por_codigo(inventario, codigo):
+    return inventario.get(codigo)
+
+
+def buscar_por_categoria(inventario, categoria):
+    encontrados = []
+    for producto in inventario.values():
+        if producto["categoria"] == categoria:
+            encontrados.append(producto)
+    return encontrados
+
+
 if __name__ == "__main__":
-    inventario = {}
-    nuevo = {
-        "codigo": "TST001",
-        "nombre": "Producto de prueba",
-        "categoria": "Aseo",
-        "precio": 1000.0,
-        "stock": 5,
-        "stock_minimo": 2,
-        "proveedor": "Proveedor X",
-    }
-    agregar_producto(inventario, nuevo)
-    print("Productos:", len(inventario))
-    try:
-        agregar_producto(inventario, nuevo)
-    except ValueError as error:
-        print("Error:", error)
+    from persistencia import cargar_inventario
+
+    inventario = cargar_inventario()
+
+    print(buscar_por_codigo(inventario, "LAC001"))
+    print(buscar_por_codigo(inventario, "XXX999"))
+
+    for producto in buscar_por_categoria(inventario, "Bebidas"):
+        print(producto["codigo"], producto["nombre"])
+    print(buscar_por_categoria(inventario, "Frutas"))
