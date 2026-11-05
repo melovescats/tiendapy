@@ -4,6 +4,7 @@ from validaciones import (ingresar_codigo, ingresar_texto, ingresar_decimal,
                           ingresar_entero, ingresar_categoria, confirmar)
 from inventario import (agregar_producto, buscar_por_codigo, buscar_por_categoria,
                         modificar_precio, modificar_stock, eliminar_producto)
+from ventas import (agregar_al_carrito, calcular_subtotal, calcular_totales)
 
 
 def mostrar_menu():
@@ -149,6 +150,61 @@ def menu_eliminar_producto(inventario):
         print("Error:", error)
 
 
+def armar_carrito(inventario):
+    carrito = {}
+    print("Agrega productos al carrito. Deja el código vacío para terminar.")
+
+    while True:
+        codigo = input("Código: ").strip().upper()
+        if codigo == "":
+            break
+
+        producto = buscar_por_codigo(inventario, codigo)
+        if producto is None:
+            print(f"No existe ningún producto con el código {codigo}.")
+            continue
+
+        cantidad = ingresar_entero(f"Cantidad de {producto['nombre']}: ")
+        try:
+            agregar_al_carrito(inventario, carrito, codigo, cantidad)
+            print("Agregado al carrito.")
+        except ValueError as error:
+            print("Error:", error)
+
+    return carrito
+
+
+def mostrar_detalle_venta(inventario, carrito):
+    filas = []
+    for codigo, cantidad in carrito.items():
+        producto = inventario[codigo]
+        valor = producto["precio"] * cantidad
+        filas.append([producto["nombre"], cantidad, producto["precio"], valor])
+
+    encabezados = ["Producto", "Cantidad", "Precio", "Valor"]
+    print(tabulate(filas, headers=encabezados, tablefmt="grid"))
+
+    subtotal = calcular_subtotal(inventario, carrito)
+    descuento, total = calcular_totales(subtotal)
+    print("Subtotal:", subtotal)
+    print("Descuento:", descuento)
+    print("TOTAL A PAGAR:", total)
+    return total
+
+
+def menu_nueva_venta(inventario):
+    print()
+    print("--- Nueva venta ---")
+
+    carrito = armar_carrito(inventario)
+    if not carrito:
+        print("El carrito está vacío. Venta cancelada.")
+        return
+
+    mostrar_detalle_venta(inventario, carrito)
+    print("(El pago todavía no está listo: no se guardó nada.)")
+
+
 def main():
     inventario = cargar_inventario()
 
@@ -170,10 +226,12 @@ def main():
             menu_modificar_producto(inventario)
         elif opcion == "5":
             menu_eliminar_producto(inventario)
+        elif opcion == "6":
+            menu_nueva_venta(inventario)
         elif opcion == "9":
             guardar_inventario(inventario)
             print("Inventario guardado.")
-        elif opcion in ["6", "7", "8"]:
+        elif opcion in ["7", "8"]:
             print("Esta opción todavía no está lista.")
         else:
             print("Error: opción no válida.")
