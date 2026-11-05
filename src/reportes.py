@@ -36,15 +36,63 @@ def calcular_resumen(ventas_dia):
     return total, numero, ticket_promedio
 
 
+def contar_unidades_vendidas(ventas_dia):
+    conteo = {}
+    for venta in ventas_dia:
+        for codigo, cantidad in venta["items"].items():
+            conteo[codigo] = conteo.get(codigo, 0) + cantidad
+    return conteo
+
+
+def producto_mas_vendido(conteo):
+    if not conteo:
+        return None
+
+    mejor = None
+    for codigo, cantidad in conteo.items():
+        if mejor is None or cantidad > conteo[mejor]:
+            mejor = codigo
+    return mejor, conteo[mejor]
+
+
+def productos_sin_ventas(inventario, conteo):
+    sin_ventas = []
+    for codigo, producto in inventario.items():
+        if codigo not in conteo:
+            sin_ventas.append(producto)
+    return sin_ventas
+
+
+def categorias_con_movimiento(inventario, conteo):
+    categorias = []
+    for codigo in conteo:
+        if codigo in inventario:
+            categoria = inventario[codigo]["categoria"]
+            if categoria not in categorias:
+                categorias.append(categoria)
+    return categorias
+
+
 if __name__ == "__main__":
-    ventas = [
+    from persistencia import cargar_inventario
+
+    inventario = cargar_inventario()
+    ventas_dia = [
         {"fecha": "2026-11-20", "total": 18400.0,
             "items": {"LAC001": 2, "BEB001": 1}},
         {"fecha": "2026-11-20", "total": 5800.0, "items": {"BEB001": 1}},
-        {"fecha": "2026-11-21", "total": 9000.0, "items": {"ASE002": 2}},
+        {"fecha": "2026-11-20", "total": 14100.0,
+            "items": {"BEB001": 1, "ASE002": 2}},
     ]
 
-    dia = ventas_del_dia(ventas, "2026-11-20")
-    print(len(dia))
-    print(calcular_resumen(dia))
-    print(calcular_resumen(ventas_del_dia(ventas, "2026-11-25")))
+    conteo = contar_unidades_vendidas(ventas_dia)
+    print(conteo)
+    print(producto_mas_vendido(conteo))
+    print(producto_mas_vendido({}))
+
+    sin_ventas = productos_sin_ventas(inventario, conteo)
+    print(len(sin_ventas))
+    for producto in sin_ventas:
+        print(producto["codigo"])
+
+    print(categorias_con_movimiento(inventario, conteo))
