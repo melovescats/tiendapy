@@ -2,7 +2,8 @@ from persistencia import cargar_inventario, guardar_inventario
 from tabulate import tabulate
 from validaciones import (ingresar_codigo, ingresar_texto,
                           ingresar_decimal, ingresar_entero, ingresar_categoria)
-from inventario import agregar_producto, buscar_por_codigo, buscar_por_categoria
+from inventario import (agregar_producto, buscar_por_codigo,
+                        buscar_por_categoria, modificar_precio, modificar_stock)
 
 
 def mostrar_menu():
@@ -96,6 +97,36 @@ def menu_consultar_producto(inventario):
         print("Error: opción no válida.")
 
 
+def menu_modificar_producto(inventario):
+    print()
+    print("--- Modificar producto ---")
+
+    codigo = ingresar_codigo("Código: ")
+    producto = buscar_por_codigo(inventario, codigo)
+    if producto is None:
+        print(f"No existe ningún producto con el código {codigo}.")
+        return
+
+    mostrar_tabla([producto])
+    print("1. Modificar precio")
+    print("2. Modificar stock")
+    opcion = input("Elige una opción: ").strip()
+
+    try:
+        if opcion == "1":
+            nuevo_precio = ingresar_decimal("Nuevo precio: ")
+            modificar_precio(inventario, codigo, nuevo_precio)
+            print("Precio actualizado.")
+        elif opcion == "2":
+            nuevo_stock = ingresar_entero("Nuevo stock: ")
+            modificar_stock(inventario, codigo, nuevo_stock)
+            print("Stock actualizado.")
+        else:
+            print("Error: opción no válida.")
+    except ValueError as error:
+        print("Error:", error)
+
+
 def main():
     inventario = cargar_inventario()
 
@@ -113,10 +144,12 @@ def main():
             menu_agregar_producto(inventario)
         elif opcion == "3":
             menu_consultar_producto(inventario)
+        elif opcion == "4":
+            menu_modificar_producto(inventario)
         elif opcion == "9":
             guardar_inventario(inventario)
             print("Inventario guardado.")
-        elif opcion in ["4", "5", "6", "7", "8"]:
+        elif opcion in ["5", "6", "7", "8"]:
             print("Esta opción todavía no está lista.")
         else:
             print("Error: opción no válida.")
