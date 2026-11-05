@@ -13,18 +13,38 @@ def productos_en_alerta(inventario):
     return alertas
 
 
+def ventas_del_dia(ventas, fecha):
+    del_dia = []
+    for venta in ventas:
+        if venta["fecha"] == fecha:
+            del_dia.append(venta)
+    return del_dia
+
+
+def calcular_resumen(ventas_dia):
+    numero = len(ventas_dia)
+
+    total = 0.0
+    for venta in ventas_dia:
+        total += venta["total"]
+
+    if numero == 0:
+        ticket_promedio = 0.0
+    else:
+        ticket_promedio = round(total / numero, 2)
+
+    return total, numero, ticket_promedio
+
+
 if __name__ == "__main__":
-    from persistencia import cargar_inventario
+    ventas = [
+        {"fecha": "2026-11-20", "total": 18400.0,
+            "items": {"LAC001": 2, "BEB001": 1}},
+        {"fecha": "2026-11-20", "total": 5800.0, "items": {"BEB001": 1}},
+        {"fecha": "2026-11-21", "total": 9000.0, "items": {"ASE002": 2}},
+    ]
 
-    inventario = cargar_inventario()
-    alertas = productos_en_alerta(inventario)
-
-    for proveedor, productos in alertas.items():
-        print(proveedor)
-        for producto in productos:
-            if esta_agotado(producto):
-                estado = "AGOTADO"
-            else:
-                estado = "stock bajo"
-            print(
-                f"  {producto['codigo']} {producto['nombre']} - stock {producto['stock']} ({estado})")
+    dia = ventas_del_dia(ventas, "2026-11-20")
+    print(len(dia))
+    print(calcular_resumen(dia))
+    print(calcular_resumen(ventas_del_dia(ventas, "2026-11-25")))
