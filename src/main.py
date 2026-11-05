@@ -2,7 +2,7 @@ from persistencia import cargar_inventario, guardar_inventario
 from tabulate import tabulate
 from validaciones import (ingresar_codigo, ingresar_texto,
                           ingresar_decimal, ingresar_entero, ingresar_categoria)
-from inventario import agregar_producto, buscar_por_codigo
+from inventario import agregar_producto, buscar_por_codigo, buscar_por_categoria
 
 
 def mostrar_menu():
@@ -20,13 +20,9 @@ def mostrar_menu():
     print("0. Salir")
 
 
-def mostrar_inventario(inventario):
-    if not inventario:
-        print("El inventario está vacío.")
-        return
-
+def mostrar_tabla(productos):
     filas = []
-    for producto in inventario.values():
+    for producto in productos:
         filas.append([
             producto["codigo"],
             producto["nombre"],
@@ -40,6 +36,13 @@ def mostrar_inventario(inventario):
     encabezados = ["Código", "Nombre", "Categoría",
                    "Precio", "Stock", "Mínimo", "Proveedor"]
     print(tabulate(filas, headers=encabezados, tablefmt="grid"))
+
+
+def mostrar_inventario(inventario):
+    if not inventario:
+        print("El inventario está vacío.")
+        return
+    mostrar_tabla(inventario.values())
 
 
 def menu_agregar_producto(inventario):
@@ -68,6 +71,31 @@ def menu_agregar_producto(inventario):
         print("Error:", error)
 
 
+def menu_consultar_producto(inventario):
+    print()
+    print("--- Consultar producto ---")
+    print("1. Por código")
+    print("2. Por categoría")
+    opcion = input("Elige una opción: ").strip()
+
+    if opcion == "1":
+        codigo = ingresar_codigo("Código: ")
+        producto = buscar_por_codigo(inventario, codigo)
+        if producto is None:
+            print(f"No existe ningún producto con el código {codigo}.")
+        else:
+            mostrar_tabla([producto])
+    elif opcion == "2":
+        categoria = ingresar_categoria("Categoría: ")
+        encontrados = buscar_por_categoria(inventario, categoria)
+        if not encontrados:
+            print(f"No hay productos en la categoría {categoria}.")
+        else:
+            mostrar_tabla(encontrados)
+    else:
+        print("Error: opción no válida.")
+
+
 def main():
     inventario = cargar_inventario()
 
@@ -83,10 +111,12 @@ def main():
             mostrar_inventario(inventario)
         elif opcion == "2":
             menu_agregar_producto(inventario)
+        elif opcion == "3":
+            menu_consultar_producto(inventario)
         elif opcion == "9":
             guardar_inventario(inventario)
             print("Inventario guardado.")
-        elif opcion in ["3", "4", "5", "6", "7", "8"]:
+        elif opcion in ["4", "5", "6", "7", "8"]:
             print("Esta opción todavía no está lista.")
         else:
             print("Error: opción no válida.")
