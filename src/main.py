@@ -7,6 +7,7 @@ from inventario import (agregar_producto, buscar_por_codigo, buscar_por_categori
                         modificar_precio, modificar_stock, eliminar_producto)
 from ventas import (agregar_al_carrito, calcular_subtotal, calcular_totales,
                     calcular_cambio, confirmar_venta)
+from reportes import productos_en_alerta, esta_agotado
 
 
 def mostrar_menu():
@@ -234,6 +235,31 @@ def menu_nueva_venta(inventario):
     print("Cambio:", cambio)
 
 
+def menu_alertas(inventario):
+    print()
+    print("--- Alertas de stock ---")
+
+    alertas = productos_en_alerta(inventario)
+    if not alertas:
+        print("No hay productos en alerta. Todo el stock está por encima del mínimo.")
+        return
+
+    for proveedor, productos in alertas.items():
+        print()
+        print("Proveedor:", proveedor)
+        filas = []
+        for producto in productos:
+            if esta_agotado(producto):
+                estado = "AGOTADO"
+            else:
+                estado = "Stock bajo"
+            filas.append([producto["codigo"], producto["nombre"],
+                          producto["stock"], producto["stock_minimo"], estado])
+
+        encabezados = ["Código", "Nombre", "Stock", "Mínimo", "Estado"]
+        print(tabulate(filas, headers=encabezados, tablefmt="grid"))
+
+
 def main():
     inventario = cargar_inventario()
 
@@ -257,10 +283,12 @@ def main():
             menu_eliminar_producto(inventario)
         elif opcion == "6":
             menu_nueva_venta(inventario)
+        elif opcion == "7":
+            menu_alertas(inventario)
         elif opcion == "9":
             guardar_inventario(inventario)
             print("Inventario guardado.")
-        elif opcion in ["7", "8"]:
+        elif opcion == "8":
             print("Esta opción todavía no está lista.")
         else:
             print("Error: opción no válida.")
