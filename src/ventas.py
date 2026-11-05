@@ -28,22 +28,28 @@ def agregar_al_carrito(inventario, carrito, codigo, cantidad):
     carrito[codigo] = carrito.get(codigo, 0) + cantidad
 
 
+def calcular_totales(subtotal):
+    porcentaje = calcular_porcentaje_descuento(subtotal)
+    descuento = round(subtotal * porcentaje, 2)
+    total = round(subtotal - descuento, 2)
+    return descuento, total
+
+
+def calcular_cambio(total, pago):
+    if pago < total:
+        raise ValueError(
+            f"el pago es insuficiente (faltan {round(total - pago, 2)})")
+    return round(pago - total, 2)
+
+
 if __name__ == "__main__":
-    from persistencia import cargar_inventario
+    print(calcular_totales(14200.0))
+    print(calcular_totales(60000.0))
+    print(calcular_totales(120000.0))
 
-    inventario = cargar_inventario()
-    carrito = {}
-
-    agregar_al_carrito(inventario, carrito, "LAC001", 2)
-    agregar_al_carrito(inventario, carrito, "LAC001", 3)
-    print(carrito)
-
-    pruebas = [("LAC002", 4), ("BEB002", 1), ("XXX999", 1),
-               ("LAC001", 0), ("LAC001", 31)]
-    for codigo, cantidad in pruebas:
-        try:
-            agregar_al_carrito(inventario, carrito, codigo, cantidad)
-        except ValueError as error:
-            print("Error:", error)
-
-    print(carrito)
+    print(calcular_cambio(57000.0, 60000.0))
+    print(calcular_cambio(57000.0, 57000.0))
+    try:
+        calcular_cambio(57000.0, 50000.0)
+    except ValueError as error:
+        print("Error:", error)
