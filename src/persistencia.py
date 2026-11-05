@@ -85,6 +85,39 @@ def registrar_venta(fecha, total, items):
         archivo.write(f"{fecha}|{total}|{detalle}\n")
 
 
+def cargar_ventas():
+    ventas = []
+
+    try:
+        with open(ruta_ventas, "r", encoding="utf-8") as archivo:
+            for numero, linea in enumerate(archivo, start=1):
+                linea = linea.strip()
+                if linea == "":
+                    continue
+
+                try:
+                    fecha, total, detalle = linea.split("|")
+                    items = {}
+                    for par in detalle.split(";"):
+                        codigo, cantidad = par.split(":")
+                        items[codigo] = int(cantidad)
+                    venta = {"fecha": fecha, "total": float(
+                        total), "items": items}
+                except ValueError:
+                    print(
+                        f"Advertencia: venta de la línea {numero} omitida (formato inválido).")
+                    continue
+
+                ventas.append(venta)
+    except FileNotFoundError:
+        pass
+
+    return ventas
+
+
 if __name__ == "__main__":
+    import os
+    print("Archivo de ventas:", os.path.abspath(ruta_ventas))
     registrar_venta("2026-11-20", 18400.0, {"LAC001": 2, "BEB001": 1})
-    print("Venta registrada")
+    ventas = cargar_ventas()
+    print("Ventas cargadas:", len(ventas))
