@@ -1,5 +1,6 @@
 from datetime import date
-from persistencia import cargar_inventario, guardar_inventario, registrar_venta
+from persistencia import (cargar_inventario, guardar_inventario,
+                          registrar_venta, cargar_ventas)
 from tabulate import tabulate
 from validaciones import (ingresar_codigo, ingresar_texto, ingresar_decimal,
                           ingresar_entero, ingresar_categoria, confirmar)
@@ -7,7 +8,10 @@ from inventario import (agregar_producto, buscar_por_codigo, buscar_por_categori
                         modificar_precio, modificar_stock, eliminar_producto)
 from ventas import (agregar_al_carrito, calcular_subtotal, calcular_totales,
                     calcular_cambio, confirmar_venta)
-from reportes import productos_en_alerta, esta_agotado
+from reportes import (productos_en_alerta, esta_agotado, ventas_del_dia,
+                      calcular_resumen, contar_unidades_vendidas,
+                      producto_mas_vendido, productos_sin_ventas,
+                      categorias_con_movimiento)
 
 
 def mostrar_menu():
@@ -260,6 +264,52 @@ def menu_alertas(inventario):
         print(tabulate(filas, headers=encabezados, tablefmt="grid"))
 
 
+def menu_cierre_dia(inventario):
+    print()
+    print("--- Cierre del día ---")
+
+    fecha = str(date.today())
+    ventas_dia = ventas_del_dia(cargar_ventas(), fecha)
+    total, numero, ticket_promedio = calcular_resumen(ventas_dia)
+    conteo = contar_unidades_vendidas(ventas_dia)
+
+    print("Fecha:", fecha)
+    print("Total vendido:", total)
+    print("Número de ventas:", numero)
+    print("Ticket promedio:", ticket_promedio)
+
+    mas_vendido = producto_mas_vendido(conteo)
+    if mas_vendido is None:
+        print("Producto más vendido: ninguno")
+    else:
+        codigo, unidades = mas_vendido
+        producto = buscar_por_codigo(inventario, codigo)
+        if producto is None:
+            nombre = codigo
+        else:
+            nombre = producto["nombre"]
+        print(f"Producto más vendido: {nombre} ({unidades} unidades)")
+
+    categorias = categorias_con_movimiento(inventario, conteo)
+    if categorias:
+        print("Categorías con movimiento:", ", ".join(categorias))
+    else:
+        print("Categorías con movimiento: ninguna")
+
+    sin_ventas = productos_sin_ventas(inventario, conteo)
+    print()
+    if sin_ventas:
+        print("Productos sin ventas hoy:")
+        filas = []
+        for producto in sin_ventas:
+            filas.append(
+                [producto["codigo"], producto["nombre"], producto["stock"]])
+        print(tabulate(filas, headers=[
+              "Código", "Nombre", "Stock"], tablefmt="grid"))
+    else:
+        print("Todos los productos tuvieron ventas hoy.")
+
+
 def main():
     inventario = cargar_inventario()
 
@@ -285,11 +335,11 @@ def main():
             menu_nueva_venta(inventario)
         elif opcion == "7":
             menu_alertas(inventario)
+        elif opcion == "8":
+            menu_cierre_dia(inventario)
         elif opcion == "9":
             guardar_inventario(inventario)
             print("Inventario guardado.")
-        elif opcion == "8":
-            print("Esta opción todavía no está lista.")
         else:
             print("Error: opción no válida.")
 
