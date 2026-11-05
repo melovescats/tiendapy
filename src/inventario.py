@@ -16,14 +16,45 @@ def buscar_por_categoria(inventario, categoria):
     return encontrados
 
 
+def modificar_precio(inventario, codigo, nuevo_precio):
+    if codigo not in inventario:
+        raise ValueError(f"el código {codigo} no existe")
+    if nuevo_precio <= 0:
+        raise ValueError("el precio debe ser mayor que cero")
+    inventario[codigo]["precio"] = nuevo_precio
+
+
+def modificar_stock(inventario, codigo, nuevo_stock):
+    if codigo not in inventario:
+        raise ValueError(f"el código {codigo} no existe")
+    if nuevo_stock < 0:
+        raise ValueError("el stock no puede ser negativo")
+    inventario[codigo]["stock"] = nuevo_stock
+
+
 if __name__ == "__main__":
-    from persistencia import cargar_inventario
+    inventario = {
+        "TST001": {
+            "codigo": "TST001",
+            "nombre": "Producto de prueba",
+            "categoria": "Aseo",
+            "precio": 1000.0,
+            "stock": 5,
+            "stock_minimo": 2,
+            "proveedor": "Proveedor X",
+        }
+    }
 
-    inventario = cargar_inventario()
+    modificar_precio(inventario, "TST001", 1500.0)
+    modificar_stock(inventario, "TST001", 20)
+    print(inventario["TST001"]["precio"], inventario["TST001"]["stock"])
 
-    print(buscar_por_codigo(inventario, "LAC001"))
-    print(buscar_por_codigo(inventario, "XXX999"))
+    try:
+        modificar_precio(inventario, "TST001", -5)
+    except ValueError as error:
+        print("Error:", error)
 
-    for producto in buscar_por_categoria(inventario, "Bebidas"):
-        print(producto["codigo"], producto["nombre"])
-    print(buscar_por_categoria(inventario, "Frutas"))
+    try:
+        modificar_stock(inventario, "XXX999", 10)
+    except ValueError as error:
+        print("Error:", error)
