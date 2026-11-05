@@ -1,10 +1,12 @@
-from persistencia import cargar_inventario, guardar_inventario
+from datetime import date
+from persistencia import cargar_inventario, guardar_inventario, registrar_venta
 from tabulate import tabulate
 from validaciones import (ingresar_codigo, ingresar_texto, ingresar_decimal,
                           ingresar_entero, ingresar_categoria, confirmar)
 from inventario import (agregar_producto, buscar_por_codigo, buscar_por_categoria,
                         modificar_precio, modificar_stock, eliminar_producto)
-from ventas import (agregar_al_carrito, calcular_subtotal, calcular_totales)
+from ventas import (agregar_al_carrito, calcular_subtotal, calcular_totales,
+                    calcular_cambio, confirmar_venta)
 
 
 def mostrar_menu():
@@ -192,6 +194,17 @@ def mostrar_detalle_venta(inventario, carrito):
     return total
 
 
+def pedir_pago(total):
+    while True:
+        pago = ingresar_decimal("Pago recibido: ")
+        try:
+            return calcular_cambio(total, pago)
+        except ValueError as error:
+            print("Error:", error)
+            if not confirmar("¿Intentar de nuevo?"):
+                return None
+
+
 def menu_nueva_venta(inventario):
     print()
     print("--- Nueva venta ---")
@@ -201,8 +214,24 @@ def menu_nueva_venta(inventario):
         print("El carrito está vacío. Venta cancelada.")
         return
 
-    mostrar_detalle_venta(inventario, carrito)
-    print("(El pago todavía no está listo: no se guardó nada.)")
+    total = mostrar_detalle_venta(inventario, carrito)
+
+    cambio = pedir_pago(total)
+    if cambio is None:
+        print("Venta cancelada. El inventario no cambió.")
+        return
+
+    try:
+        confirmar_venta(inventario, carrito)
+    except ValueError as error:
+        print("Error:", error)
+        print("Venta cancelada. El inventario no cambió.")
+        return
+
+    guardar_inventario(inventario)
+    registrar_venta(str(date.today()), total, carrito)
+    print("Venta registrada.")
+    print("Cambio:", cambio)
 
 
 def main():
