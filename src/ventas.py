@@ -42,14 +42,37 @@ def calcular_cambio(total, pago):
     return round(pago - total, 2)
 
 
-if __name__ == "__main__":
-    print(calcular_totales(14200.0))
-    print(calcular_totales(60000.0))
-    print(calcular_totales(120000.0))
+def confirmar_venta(inventario, carrito):
+    if not carrito:
+        raise ValueError("el carrito está vacío")
 
-    print(calcular_cambio(57000.0, 60000.0))
-    print(calcular_cambio(57000.0, 57000.0))
+    for codigo, cantidad in carrito.items():
+        if codigo not in inventario:
+            raise ValueError(f"el código {codigo} no existe")
+        if cantidad > inventario[codigo]["stock"]:
+            raise ValueError(
+                f"stock insuficiente de {inventario[codigo]['nombre']}")
+
+    for codigo, cantidad in carrito.items():
+        inventario[codigo]["stock"] -= cantidad
+
+
+if __name__ == "__main__":
+    inventario = {
+        "TST001": {"codigo": "TST001", "nombre": "Producto uno", "stock": 5},
+        "TST002": {"codigo": "TST002", "nombre": "Producto dos", "stock": 3},
+    }
+
+    confirmar_venta(inventario, {"TST001": 2, "TST002": 3})
+    print(inventario["TST001"]["stock"], inventario["TST002"]["stock"])
+
     try:
-        calcular_cambio(57000.0, 50000.0)
+        confirmar_venta(inventario, {})
     except ValueError as error:
         print("Error:", error)
+
+    try:
+        confirmar_venta(inventario, {"TST001": 1, "TST002": 1})
+    except ValueError as error:
+        print("Error:", error)
+    print(inventario["TST001"]["stock"], inventario["TST002"]["stock"])
